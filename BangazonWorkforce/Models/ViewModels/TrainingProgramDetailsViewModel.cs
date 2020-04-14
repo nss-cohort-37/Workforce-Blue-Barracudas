@@ -5,13 +5,14 @@ using System.Threading.Tasks;
 
 namespace BangazonWorkforce.Models.ViewModels
 {
-    public class TrainingProgramViewModel
+    public class TrainingProgramDetailsViewModel
     {
-
-        public int Id { get; set; }
+        public int TrainingProgramId { get; set; }
         public string Name { get; set; }
-
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
+        public int MaxAttendees { get; set; }
+        public List<Employee> Employees { get; set; }
+
     }
 }
