@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace BangazonWorkforce.Models
-{
+{ 
     public class PaymentType
     {
         public int Id { get; set; }

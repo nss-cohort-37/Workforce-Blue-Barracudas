@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace BangazonWorkforce.Models
-{
+{ 
     public class Department
     {
         public int Id { get; set; }
