@@ -64,7 +64,7 @@ namespace BangazonWorkforce.Controllers
         // GET: Departments/Details/5
         public ActionResult Details(int id)
         {
-            return View();
+            return View(GetDepartmentByIdWithEmployees(id));
         }
 
         // GET: Departments/Create
@@ -133,6 +133,50 @@ namespace BangazonWorkforce.Controllers
             catch
             {
                 return View();
+            }
+        }
+
+        private Department GetDepartmentByIdWithEmployees(int id)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT d.Id, d.Name, d.Budget, e.Id AS EmployeeId, e.FirstName + ' ' + e.LastName AS FullName
+                                        FROM Department d 
+                                        LEFT JOIN Employee e ON d.Id = e.DepartmentId
+                                        WHERE d.Id = @id";
+
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                    var reader = cmd.ExecuteReader();
+                    Department department = null;
+
+                    while (reader.Read())
+                    {
+                        if (department == null)
+                        {
+                            department = new Department()
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                Name = reader.GetString(reader.GetOrdinal("Name")),
+                                Budget = reader.GetInt32(reader.GetOrdinal("Budget")),
+                                Employees = new List<Employee>()
+                            };
+                        }
+
+                        if (!reader.IsDBNull(reader.GetOrdinal("EmployeeId")))
+                        {
+                            department.Employees.Add(new Employee()
+                            {
+                                FirstName = reader.GetString(reader.GetOrdinal("FullName"))
+                            });
+                        }
+                    }
+                    reader.Close();
+                    return department;
+                }
             }
         }
     }
