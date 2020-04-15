@@ -41,7 +41,16 @@
     <table class="table">
         <thead>
             <tr>
+                @if (Model.StartDate >= DateTime.Now)
+                {
+                  
                 <h5>Enrolled Employees</h5>
+                }
+                else
+                {
+
+                    <h5>Attended Employees</h5>
+                } 
                 <th>
                     @Html.DisplayNameFor(model => model.EmployeeFirstName)
                 </th>

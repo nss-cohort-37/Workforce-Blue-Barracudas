@@ -70,6 +70,9 @@ namespace BangazonWorkforce.Controllers
             return View(trainingProgram);
         }
 
+        //This views renders a form to with Name, StartDate, EndDate, and Max Attendees fields 
+        //Once created a specific Id should be assigned and you should be redirected to the Index view
+
         // GET: TrainingPrograms/Create
         public ActionResult Create()
         {
@@ -111,7 +114,8 @@ namespace BangazonWorkforce.Controllers
             }
         }
 
-     
+     //This allows an edit on Training Progam information ONLY. You can not edit any past programs. This edit does not affect employees enrolled in program
+
         // GET: TrainingPrograms/Edit/5
         public ActionResult Edit(int id)
         {
@@ -187,7 +191,7 @@ namespace BangazonWorkforce.Controllers
         }
 
         //In this delete before deleting the training program it must delete employees from "EmployeeTraining" that are connected to training program and then removes the training program
-        //This delete does not allow any programs that have already taken place to be deleted 
+        //This delete does not allow any programs that have already taken place to be deleted, there is no "delete" button that renders for past programs.
 
         // POST: TrainingPrograms/Delete/5
         [HttpPost]
@@ -222,7 +226,7 @@ namespace BangazonWorkforce.Controllers
                 return View();
             }
         }
-
+        //This is the function that removes all employees connections to training programs before deleting selected training program
         private void DeleteEmployeesBeforeProgram(int id)
         {
             using (SqlConnection conn = Connection)
@@ -238,6 +242,9 @@ namespace BangazonWorkforce.Controllers
             }
 
         }
+        
+        //This gets each training program by ID with the list of employee information
+        
         private TrainingProgramDetailsViewModel GetTrainingProgramById(int id)
         {
             using (SqlConnection conn = Connection)
@@ -296,6 +303,7 @@ namespace BangazonWorkforce.Controllers
 
         //separate VIEW for getting programs before current date and time
         //there is now a "GetPastPrograms.cshtml" file for TrainingProgram Model
+        //This will also show the employees who attended the program on the Details link 
 
         public ActionResult GetPastPrograms()
         {
