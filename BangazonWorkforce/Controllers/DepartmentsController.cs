@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using BangazonWorkforce.Models;
+using BangazonWorkforce.Models.ViewModels;
 
 namespace BangazonWorkforce.Controllers
 {
@@ -35,18 +36,22 @@ namespace BangazonWorkforce.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = "SELECT Id, Name, Budget FROM Department";
+                    cmd.CommandText = @"SELECT d.Id, d.Name, d.Budget, COUNT(e.DepartmentId) AS Employees
+                                       FROM Department d
+                                       LEFT JOIN Employee e ON d.Id = e.DepartmentId
+                                       GROUP BY d.Id, d.Name, d.Budget";
 
                     var reader = cmd.ExecuteReader();
-                    var departments = new List<Department>();
+                    var departments = new List<DepartmentListViewModel>();
 
                     while (reader.Read())
                     {
-                        var department = new Department()
+                        var department = new DepartmentListViewModel()
                         {
-                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            DepartmentId = reader.GetInt32(reader.GetOrdinal("Id")),
                             Name = reader.GetString(reader.GetOrdinal("Name")),
-                            Budget = reader.GetInt32(reader.GetOrdinal("Budget"))
+                            Budget = reader.GetInt32(reader.GetOrdinal("Budget")),
+                            EmployeeCount = reader.GetInt32(reader.GetOrdinal("Employees"))
                         };
                         departments.Add(department);
                     }

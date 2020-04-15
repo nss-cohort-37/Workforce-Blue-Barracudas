@@ -4,14 +4,15 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BangazonWorkforce.Models
+namespace BangazonWorkforce.Models.ViewModels
 {
-    public class Department
+    public class DepartmentListViewModel
     {
-        public int Id { get; set; }
+        public int DepartmentId { get; set; }
         public string Name { get; set; }
         public int Budget { get; set; }
+
+        [Display(Name = "Size of Department")]
         public int EmployeeCount { get; set; }
-        public List<Employee> Employees { get; set; }
     }
 }
