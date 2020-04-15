@@ -11,10 +11,11 @@ namespace BangazonWorkforce.Models.ViewModels
     {
         public int ComputerId { get; set; }
 
-        [Display(Name = "Computer Make")]
-        public string Make { get; set; }
-        [Display (Name ="Computer Manufacturer")]
+        [Display(Name = "Computer Model")]
         public string Model { get; set; }
+
+        [Display (Name ="Computer Manufacturer")]
+        public string Make { get; set; }
 
         [Display(Name = "Purchase Date")]
         public DateTime PurchaseDate { get; set; }
