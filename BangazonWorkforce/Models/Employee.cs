@@ -6,29 +6,8 @@ using System.Threading.Tasks;
 
 namespace BangazonWorkforce.Models
 {
-<<<<<<< HEAD
-<<<<<<< HEAD
     public class Employee
     {
-        public int Id { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public int DepartmentId { get; set; }
-        public string Email { get; set; }
-        public bool IsSupervisor { get; set; }
-        public int? ComputerId { get; set; }
-        public Computer Computer { get; set; }
-
-        public Department Department { get; set; }
-        
-=======
-  public class Employee
-  {
->>>>>>> master
-=======
-    public class Employee
-    {
->>>>>>> master
 
     public int Id { get; set; }
     [Display(Name = "First Name")]
