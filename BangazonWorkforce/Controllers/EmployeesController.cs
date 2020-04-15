@@ -174,10 +174,18 @@ namespace BangazonWorkforce.Controllers
         {
             var employee = GetEmployeeById(id);
             var departmentOptions = GetDepartmentOptions();
-            var computerOptions = GetAvailableComputers();
+            var computerOptions = AvailableAndAssignedComputers(id);
             var viewModel = new EmployeeEditViewModel()
             {
-              
+                EmployeeId = employee.Id,
+                FirstName = employee.FirstName,
+                LastName = employee.LastName,
+                Email = employee.Email,
+                DepartmentId = employee.DepartmentId,
+                ComputerId = employee.ComputerId,
+                IsSupervisor = employee.IsSupervisor,
+                DepartmentOptions = departmentOptions,
+                ComputerOptions = computerOptions
             };
             return View(viewModel);
         }
@@ -185,15 +193,45 @@ namespace BangazonWorkforce.Controllers
         // POST: Employees/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public ActionResult Edit(int id, [FromForm] EmployeeEditViewModel employee)
         {
             try
             {
-                // TODO: Add update logic here
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = @"UPDATE Employee 
+                                            SET FirstName = @firstName, 
+                                                LastName = @lastName, 
+                                                Email = @email,
+                                                DepartmentId = @departmentId,
+                                                ComputerId = @computerId,
+                                                IsSupervisor = @isSupervisor
+                                                
+                                            WHERE Id = @id";
+
+                        cmd.Parameters.Add(new SqlParameter("@firstName", employee.FirstName));
+                        cmd.Parameters.Add(new SqlParameter("@lastName", employee.LastName));
+                        cmd.Parameters.Add(new SqlParameter("@email", employee.Email));
+                        cmd.Parameters.Add(new SqlParameter("@departmentId", employee.DepartmentId));
+                        cmd.Parameters.Add(new SqlParameter("@computerId", employee.ComputerId));
+                        cmd.Parameters.Add(new SqlParameter("@isSupervisor", employee.IsSupervisor));
+                        cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                        var rowsAffected = cmd.ExecuteNonQuery();
+
+                        if (rowsAffected < 1)
+                        {
+                            return NotFound();
+                        }
+                    }
+                }
 
                 return RedirectToAction(nameof(Index));
             }
-            catch
+            catch (Exception ex)
             {
                 return View();
             }
@@ -292,7 +330,8 @@ namespace BangazonWorkforce.Controllers
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
                     cmd.CommandText = @"SELECT * FROM Computer
-                                      WHERE Id NOT IN (SELECT ComputerId FROM Employee)";
+                                      WHERE Id NOT IN (SELECT ComputerId FROM Employee)
+                                      AND DecomissionDate IS NULL";
 
                     var reader = cmd.ExecuteReader();
                     var options = new List<SelectListItem>();
@@ -314,6 +353,41 @@ namespace BangazonWorkforce.Controllers
             }
         }
 
+        private List<SelectListItem> AvailableAndAssignedComputers(int EmpId)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT c.Id, c.Make, c.Model, e.FirstName, COALESCE( FirstName + ' ' + Model, 'Available Computer ' + Model) AS IdModel 
+                                        FROM Computer c
+                                        LEFT JOIN Employee e ON e.ComputerId = c.Id
+                                        WHERE e.Id = @id AND c.Id = e.ComputerId
+                                        OR c.Id NOT IN (SELECT ComputerId FROM Employee)
+                                        AND DecomissionDate IS NULL";
+
+                    cmd.Parameters.Add(new SqlParameter("@id", EmpId));
+
+                    var reader = cmd.ExecuteReader();
+                    var options = new List<SelectListItem>();
+
+                    while (reader.Read())
+                    {
+                        var option = new SelectListItem()
+                        {
+                            Text = reader.GetString(reader.GetOrdinal("IdModel")),
+                            Value = reader.GetInt32(reader.GetOrdinal("Id")).ToString()
+                        };
+
+                        options.Add(option);
+
+                    }
+                    reader.Close();
+                    return options;
+                }
+            }
+        }
         private Employee GetEmployeeById(int id)
         {
             var programs = GetTrainingPrograms(id);
@@ -322,7 +396,7 @@ namespace BangazonWorkforce.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT e.Id AS EmployeesId, e.FirstName, e.LastName, e.DepartmentId, c.Id AS ComputersId, c.Make, c.Model, d.Name AS DepartmentName
+                    cmd.CommandText = @"SELECT e.Id AS EmployeesId, e.FirstName, e.LastName, e.Email, e.DepartmentId, e.IsSupervisor, c.Id AS ComputersId, c.Make, c.Model, d.Name AS DepartmentName
                                     FROM Employee e
                                     LEFT JOIN Department d ON d.Id = e.DepartmentId
                                     LEFT JOIN Computer c on c.Id = e.ComputerId
@@ -340,6 +414,8 @@ namespace BangazonWorkforce.Controllers
                             Id = reader.GetInt32(reader.GetOrdinal("EmployeesId")),
                             FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
                             LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                            Email = reader.GetString(reader.GetOrdinal("Email")),
+                            IsSupervisor = reader.GetBoolean(reader.GetOrdinal("IsSupervisor")),
                             ComputerId = reader.GetInt32(reader.GetOrdinal("ComputersId")),
                             DepartmentId = reader.GetInt32(reader.GetOrdinal("DepartmentId")),
                             Computer = new Computer()
