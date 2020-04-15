@@ -36,7 +36,7 @@ namespace BangazonWorkforce.Models.ViewModels
         [Display(Name = "Last Name")]
         public string EmployeeLastName { get; set; }
 
-        [Display(Name = "Department Name")]
+        [Display(Name = "Department")]
         public string EmployeeDeptName { get; set; }
 
 

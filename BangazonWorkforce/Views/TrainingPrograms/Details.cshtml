@@ -3,10 +3,13 @@
     ViewData["Title"] = "Details";
 }
 
-<h1>Details</h1>
+<h1>
+        <dd>
+          @Html.DisplayFor(model => model.TrainingProgramName)
+        </dd>
+    </h1>
 
 <div>
-    <h4>Training Program</h4>
     <hr />
     <dl class="row">
         <dt class="col-sm-2">
@@ -14,12 +17,6 @@
         </dt>
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.TrainingProgramId)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.TrainingProgramName)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.TrainingProgramName)
         </dd>
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.StartDate)
@@ -44,7 +41,7 @@
     <table class="table">
         <thead>
             <tr>
-                <h2>Enrolled Employees</h2>
+                <h5>Enrolled Employees</h5>
                 <th>
                     @Html.DisplayNameFor(model => model.EmployeeFirstName)
                 </th>
