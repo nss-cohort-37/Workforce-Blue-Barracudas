@@ -172,7 +172,14 @@ namespace BangazonWorkforce.Controllers
         // GET: Employees/Edit/5
         public ActionResult Edit(int id)
         {
-            return View();
+            var employee = GetEmployeeById(id);
+            var departmentOptions = GetDepartmentOptions();
+            var computerOptions = GetAvailableComputers();
+            var viewModel = new EmployeeEditViewModel()
+            {
+              
+            };
+            return View(viewModel);
         }
 
         // POST: Employees/Edit/5
@@ -305,6 +312,53 @@ namespace BangazonWorkforce.Controllers
                     return options;
                 }
             }
+        }
+
+        private Employee GetEmployeeById(int id)
+        {
+            var programs = GetTrainingPrograms(id);
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT e.Id AS EmployeesId, e.FirstName, e.LastName, e.DepartmentId, c.Id AS ComputersId, c.Make, c.Model, d.Name AS DepartmentName
+                                    FROM Employee e
+                                    LEFT JOIN Department d ON d.Id = e.DepartmentId
+                                    LEFT JOIN Computer c on c.Id = e.ComputerId
+                                    WHERE e.Id = @Id";
+
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                    var reader = cmd.ExecuteReader();
+                    Employee employee = null;
+
+                    if (reader.Read())
+                    {
+                        employee = new Employee()
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("EmployeesId")),
+                            FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                            LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                            ComputerId = reader.GetInt32(reader.GetOrdinal("ComputersId")),
+                            DepartmentId = reader.GetInt32(reader.GetOrdinal("DepartmentId")),
+                            Computer = new Computer()
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("ComputersId")),
+                                Make = reader.GetString(reader.GetOrdinal("Make")),
+                                Model = reader.GetString(reader.GetOrdinal("Model"))
+                            },
+                            Department = new Department()
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("DepartmentId")),
+                                Name = reader.GetString(reader.GetOrdinal("DepartmentName"))
+                            }
+                        };
+                    }
+                    reader.Close();
+                    return employee;
+                }
+            };
         }
     }
 }
