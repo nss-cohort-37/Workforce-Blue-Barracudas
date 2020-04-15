@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace BangazonWorkforce.Models
 {
-  public class Employee
-  {
+    public class Employee
+    {
 
     public int Id { get; set; }
     [Display(Name = "First Name")]
