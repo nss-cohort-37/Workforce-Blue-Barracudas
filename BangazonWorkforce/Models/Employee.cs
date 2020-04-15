@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 namespace BangazonWorkforce.Models
 {
 <<<<<<< HEAD
+<<<<<<< HEAD
     public class Employee
     {
         public int Id { get; set; }
@@ -23,6 +24,10 @@ namespace BangazonWorkforce.Models
 =======
   public class Employee
   {
+>>>>>>> master
+=======
+    public class Employee
+    {
 >>>>>>> master
 
     public int Id { get; set; }
