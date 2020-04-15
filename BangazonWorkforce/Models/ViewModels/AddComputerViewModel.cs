@@ -21,10 +21,8 @@ namespace BangazonWorkforce.Models.ViewModels
 
         public DateTime DecomissionDate { get; set; }
 
-        public int EmployeeId { get; set; }
+        public int? EmployeeId { get; set; }
 
-
-        [Display(Name = "Employees")]
 
         public List<SelectListItem> EmployeeOptions { get; set; }
     }

@@ -36,26 +36,44 @@ namespace BangazonWorkforce.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT c.Id, c.Make, c.Model, c.PurchaseDate
-                                       FROM Computer c";
+                    cmd.CommandText = @"SELECT c.Id, c.Make, c.Model, c.PurchaseDate, e.FirstName 
+                                       FROM Computer c
+                                       LEFT JOIN Employee e 
+                                       ON e.computerId = c.Id";
 
 
                     SqlDataReader reader = cmd.ExecuteReader();
 
-                    List<Computer> computers = new List<Computer>();
+                    List<ComputerDetailsViewModel> computers = new List<ComputerDetailsViewModel>();
 
                     while (reader.Read())
                     {
-                        Computer computer = new Computer
+                        ComputerDetailsViewModel computer = new ComputerDetailsViewModel
                         {
-                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            ComputerId = reader.GetInt32(reader.GetOrdinal("Id")),
                             Make = reader.GetString(reader.GetOrdinal("Make")),
                             Model = reader.GetString(reader.GetOrdinal("Model")),
-                            PurchaseDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate"))
-                           
-                        };
+                            PurchaseDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate")),
+                          
+                            };
 
-                      computers.Add(computer);
+                        if (!reader.IsDBNull(reader.GetOrdinal("FirstName")))
+                        {
+                            computer.employee = new Employee
+                            {
+                                FirstName = reader.GetString(reader.GetOrdinal("FirstName"))
+                            };
+
+                        }
+                        else
+                        {
+                            computer.employee = new Employee
+                            {
+                                FirstName = null
+                            };
+                        }
+
+                        computers.Add(computer);
                     }
 
                     reader.Close();
@@ -107,11 +125,13 @@ namespace BangazonWorkforce.Controllers
                         cmd.Parameters.Add(new SqlParameter("@purchaseDate", computer.PurchaseDate));
                         cmd.Parameters.Add(new SqlParameter("@decomissionDate", DBNull.Value));
 
-                        cmd.Parameters.Add(new SqlParameter("@employeeId", computer.EmployeeId));
 
                         var id = (int)cmd.ExecuteScalar();
                         computer.ComputerId = id;
+//this should only run if the user has selected an employee value is zero
 
+                        if(computer.EmployeeId != null)
+                        {
 
                         cmd.CommandText = @"UPDATE Employee  
                                             SET ComputerId = @computerComputerId
@@ -121,6 +141,9 @@ namespace BangazonWorkforce.Controllers
                         cmd.Parameters.Add(new SqlParameter("@computerEmployeeId", computer.EmployeeId));
 
                         cmd.ExecuteNonQuery();
+
+                        }
+
 
                         return RedirectToAction(nameof(Index));
                     }
@@ -252,6 +275,11 @@ namespace BangazonWorkforce.Controllers
 
                     var reader = cmd.ExecuteReader();
                     var options = new List<SelectListItem>();
+                    options.Add(new SelectListItem()
+                    {
+                        Text = "Assign an employee if you want!",
+                        Value = null
+                    });
 
                     while (reader.Read())
                     {
