@@ -9,6 +9,12 @@
 <p>
     <a asp-action="Create">Create New</a>
 </p>
+<form asp-controller="Computers" asp-action="Index">
+    <p>
+        Make or Model: <input type="text" name="SearchString">
+        <input type="submit" value="Filter" />
+    </p>
+</form>
 <table class="table">
     <thead>
         <tr>
@@ -41,7 +47,7 @@
 
                     @if (item.employee.FirstName == null)
                     {
-                    @Html.ActionLink("Delete", "Delete", new { id = item.ComputerId })
+                        @Html.ActionLink("Delete", "Delete", new { id = item.ComputerId })
                     }
                     else
                     {

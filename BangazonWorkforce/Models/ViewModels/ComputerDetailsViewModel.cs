@@ -16,6 +16,7 @@ namespace BangazonWorkforce.Models.ViewModels
 
         public int EmployeeId { get; set; }
 
+        public string Query { get; set; }
         public Employee employee { get; set; }
 
     }
