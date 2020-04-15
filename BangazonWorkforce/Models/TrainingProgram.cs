@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace BangazonWorkforce.Models
 {
+<<<<<<< HEAD
     public class TrainingProgram
     {
         public int Id { get; set; }
@@ -25,6 +26,16 @@ namespace BangazonWorkforce.Models
         [Display(Name = "Max Attendees")]
         public int MaxAttendees { get; set; }
         public List<Employee> Employees { get; set; }
+=======
+  public class TrainingProgram
+  {
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
+    public int MaxAttendees { get; set; }
+    public List<Employee> Employees { get; set; }
+>>>>>>> master
 
-    }
+  }
 }
