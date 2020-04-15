@@ -1,22 +1,24 @@
 ﻿@model BangazonWorkforce.Models.ViewModels.TrainingProgramDetailsViewModel
+
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Delete";
 }
 
-<h1>
-        <dd>
-          @Html.DisplayFor(model => model.TrainingProgramName)
-        </dd>
-    </h1>
 
+<h1>Are you sure you want to delete this?</h1>
 <div>
-    <hr />
     <dl class="row">
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.TrainingProgramId)
         </dt>
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.TrainingProgramId)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.TrainingProgramName)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.TrainingProgramName)
         </dd>
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.StartDate)
@@ -41,7 +43,7 @@
     <table class="table">
         <thead>
             <tr>
-                <h5>Enrolled Employees</h5>
+                 <h5>The following employees will be removed from this training program.</h5>
                 <th>
                     @Html.DisplayNameFor(model => model.EmployeeFirstName)
                 </th>
@@ -56,9 +58,9 @@
         </thead>
         <tbody>
 
-                @foreach (var employee in Model.employees)
-                {
-                    <tr>
+            @foreach (var employee in Model.employees)
+            {
+                <tr>
                     <td>
                         @Html.DisplayFor(model => employee.FirstName)
                     </td>
@@ -68,20 +70,12 @@
                     <td>
                         @Html.DisplayFor(model => employee.Department.Name)
                     </td>
-                    </tr>
-                }
+                </tr>
+            }
         </tbody>
-        </table>
+    </table>
 
-    <div>
-        @if (Model.StartDate >= DateTime.Now)
-        {
-            @Html.ActionLink("Edit", "Edit", new { id = Model.TrainingProgramId })
-        }
-        else
-        {
-
-        } |
+    <form asp-action="Delete">
+        <input type="submit" value="Delete" class="btn btn-danger" /> |
         <a asp-action="Index">Back to List</a>
-
-    </div>
+    </form>

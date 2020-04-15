@@ -18,7 +18,6 @@ namespace BangazonWorkforce.Controllers
         {
             _config = config;
         }
-        //COMPUTED PROPERTY FOR THE CONNECTION
         public SqlConnection Connection
         {
             get
@@ -27,6 +26,7 @@ namespace BangazonWorkforce.Controllers
             }
         }
 
+        //This functions gets all training programs after the current date and time
 
         // GET: TrainingPrograms
         public ActionResult Index()
@@ -111,7 +111,7 @@ namespace BangazonWorkforce.Controllers
             }
         }
 
-
+     
         // GET: TrainingPrograms/Edit/5
         public ActionResult Edit(int id)
         {
@@ -172,26 +172,72 @@ namespace BangazonWorkforce.Controllers
         // GET: TrainingPrograms/Delete/5
         public ActionResult Delete(int id)
         {
-            return View();
+            var trainingProgram = GetTrainingProgramById(id);
+            var viewModel = new TrainingProgramDetailsViewModel
+            {
+                TrainingProgramId = trainingProgram.TrainingProgramId,
+                TrainingProgramName = trainingProgram.TrainingProgramName,
+                StartDate = trainingProgram.StartDate,
+                EndDate = trainingProgram.EndDate,
+                MaxAttendees = trainingProgram.MaxAttendees,
+                employees = trainingProgram.employees
+
+            };
+            return View(viewModel);
         }
+
+        //In this delete before deleting the training program it must delete employees from "EmployeeTraining" that are connected to training program and then removes the training program
+        //This delete does not allow any programs that have already taken place to be deleted 
 
         // POST: TrainingPrograms/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public ActionResult Delete(int id, TrainingProgramDetailsViewModel trainingProgram)
         {
-            try
-            {
-                // TODO: Add delete logic here
+            
+                DeleteEmployeesBeforeProgram(id);
 
-                return RedirectToAction(nameof(Index));
-            }
-            catch
+                try
+                {
+                    using (SqlConnection conn = Connection)
+                    {
+                        conn.Open();
+                        using (SqlCommand cmd = conn.CreateCommand())
+                        {
+                            cmd.CommandText = @"DELETE FROM TrainingProgram WHERE Id = @id";
+                            cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                            int rowsAffected = cmd.ExecuteNonQuery();
+                            if (rowsAffected > 0)
+                            {
+                                     return RedirectToAction(nameof(Index));
+                        
+                        }
+                            throw new Exception("No rows affected");
+                        }
+                    }
+                }
+                catch
             {
                 return View();
             }
         }
 
+        private void DeleteEmployeesBeforeProgram(int id)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"  DELETE FROM EmployeeTraining WHERE TrainingProgramId = @TrainingProgramId";
+                    cmd.Parameters.Add(new SqlParameter("@TrainingProgramId", id));
+
+                    int rowsAffected = cmd.ExecuteNonQuery();
+                }
+            }
+
+        }
         private TrainingProgramDetailsViewModel GetTrainingProgramById(int id)
         {
             using (SqlConnection conn = Connection)
@@ -199,7 +245,8 @@ namespace BangazonWorkforce.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT tp.Id AS TrainingProgramId, tp.Name AS TrainingProgramName, tp.StartDate, tp.EndDate, tp.MaxAttendees, e.Id AS EmployeeId, e.FirstName, e.LastName, d.Name AS EmployeeDeptName
+                    cmd.CommandText = @"SELECT tp.Id AS TrainingProgramId, tp.Name AS TrainingProgramName, tp.StartDate, tp.EndDate, tp.MaxAttendees, 
+                                                e.Id AS EmployeeId, e.FirstName, e.LastName, d.Name AS EmployeeDeptName
                                     FROM TrainingProgram tp 
                                     LEFT JOIN EmployeeTraining et ON et.TrainingProgramId = tp.Id 
                                     LEFT JOIN Employee e ON et.EmployeeId = e.Id 
@@ -245,6 +292,11 @@ namespace BangazonWorkforce.Controllers
                 }
             }
         }
+
+
+        //separate VIEW for getting programs before current date and time
+        //there is now a "GetPastPrograms.cshtml" file for TrainingProgram Model
+
         public ActionResult GetPastPrograms()
         {
             using (SqlConnection conn = Connection)
