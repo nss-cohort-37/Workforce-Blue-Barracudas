@@ -15,6 +15,8 @@ namespace BangazonWorkforce.Models
         public bool IsSupervisor { get; set; }
         public int? ComputerId { get; set; }
         public Computer Computer { get; set; }
+
+        public Department Department { get; set; }
         
 
 

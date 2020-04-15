@@ -1,5 +1,4 @@
-﻿@model BangazonWorkforce.Models.TrainingProgram
-
+﻿@model BangazonWorkforce.Models.ViewModels.TrainingProgramDetailsViewModel
 @{
     ViewData["Title"] = "Details";
 }
@@ -7,20 +6,20 @@
 <h1>Details</h1>
 
 <div>
-    <h4>TrainingProgram</h4>
+    <h4>Training Program</h4>
     <hr />
     <dl class="row">
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Id)
+            @Html.DisplayNameFor(model => model.TrainingProgramId)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Id)
+            @Html.DisplayFor(model => model.TrainingProgramId)
         </dd>
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
+            @Html.DisplayNameFor(model => model.TrainingProgramName)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Name)
+            @Html.DisplayFor(model => model.TrainingProgramName)
         </dd>
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.StartDate)
@@ -40,22 +39,44 @@
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.MaxAttendees)
         </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Employees)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Employees)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Employees.FirstName)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Employees.LastName)
-        </dd>
-
     </dl>
 </div>
-<div>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
-    <a asp-action="Index">Back to List</a>
-</div>
+    <table class="table">
+        <thead>
+            <tr>
+                <h2>Enrolled Employees</h2>
+                <th>
+                    @Html.DisplayNameFor(model => model.EmployeeFirstName)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.EmployeeLastName)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.EmployeeDeptName)
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+
+                @foreach (var employee in Model.employees)
+                {
+                    <tr>
+                    <td>
+                        @Html.DisplayFor(model => employee.FirstName)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(model => employee.LastName)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(model => employee.Department.Name)
+                    </td>
+                    </tr>
+                }
+        </tbody>
+        </table>
+
+            <div>
+                @Html.ActionLink("Edit", "Edit", new { id = Model.TrainingProgramId }) |
+                <a asp-action="Index">Back to List</a>
+            </div>
