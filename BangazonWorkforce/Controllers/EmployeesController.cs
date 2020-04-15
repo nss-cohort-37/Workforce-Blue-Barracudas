@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using BangazonWorkforce.Models;
+using BangazonWorkforce.Models.ViewModels;
 
 namespace BangazonWorkforce.Controllers
 {
@@ -71,7 +72,50 @@ namespace BangazonWorkforce.Controllers
         // GET: Employees/Details/5
         public ActionResult Details(int id)
         {
-            return View();
+            var programs = GetTrainingPrograms(id);
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT e.Id AS EmployeesId, e.FirstName, e.LastName, e.DepartmentId, t.Id AS TrainingProgramsId, t.Name, c.Id AS ComputersId, c.Make, c.Model, d.Name AS DepartmentName
+                                    FROM Employee e
+                                    LEFT JOIN EmployeeTraining p ON e.Id = p.EmployeeId
+                                    LEFT JOIN TrainingProgram t ON t.Id = p.TrainingProgramId
+                                    LEFT JOIN Department d ON d.Id = e.DepartmentId
+                                    LEFT JOIN Computer c on c.Id = e.ComputerId
+                                    WHERE e.Id = @Id";
+
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                    var reader = cmd.ExecuteReader();
+                    EmployeeDetailsViewModel employee = null;
+
+                    if (reader.Read())
+                    {
+                        employee = new EmployeeDetailsViewModel()
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("EmployeesId")),
+                            FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                            LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                            Computer = new Computer()
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("ComputersId")),
+                                Make = reader.GetString(reader.GetOrdinal("Make")),
+                                Model = reader.GetString(reader.GetOrdinal("Model"))
+                            },
+                            Department = new Department()
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("DepartmentId")),
+                                Name = reader.GetString(reader.GetOrdinal("DepartmentName"))
+                            },
+                            TrainingPrograms = programs
+                        };
+                    }
+                    reader.Close();
+                    return View(employee);
+                }
+            };
         }
 
         // GET: Employees/Create
@@ -140,6 +184,39 @@ namespace BangazonWorkforce.Controllers
             catch
             {
                 return View();
+            }
+        }
+
+        private List<TrainingProgram> GetTrainingPrograms(int EmployeeId)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT p.TrainingProgramId, t.Name AS TrainingName
+                                    FROM EmployeeTraining p
+                                    LEFT JOIN TrainingProgram t ON t.Id = p.TrainingProgramId
+                                    WHERE p.EmployeeId = @EmployeeId";
+                    cmd.Parameters.Add(new SqlParameter("@Employeeid", EmployeeId));
+
+                    var reader = cmd.ExecuteReader();
+                    var programs = new List<TrainingProgram>();
+
+                    while (reader.Read())
+                    {
+                        var program = new TrainingProgram()
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("TrainingProgramId")),
+                            Name = reader.GetString(reader.GetOrdinal("TrainingName"))
+                        };
+
+                        programs.Add(program);
+
+                    }
+                    reader.Close();
+                    return programs;
+                }
             }
         }
     }
