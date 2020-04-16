@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 namespace BangazonWorkforce.Models
 
 {
-    public class RevenueReport
-    {
+  public class RevenueReport
+  {
 
-        public int ProductTypeId { get; set; }
+    public int ProductTypeId { get; set; }
 
-        public string ProductType { get; set; }
+    public string ProductType { get; set; }
 
-        public decimal TotalRevenue { get; set; }
-    }
+    public decimal TotalRevenue { get; set; }
+  }
 }
