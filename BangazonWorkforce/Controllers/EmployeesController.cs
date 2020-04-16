@@ -154,6 +154,8 @@ namespace BangazonWorkforce.Controllers
                         cmd.Parameters.Add(new SqlParameter("@isSupervisor", employee.IsSupervisor));
                         cmd.Parameters.Add(new SqlParameter("@departmentId", employee.DepartmentId));
                         cmd.Parameters.Add(new SqlParameter("@computerId", employee.ComputerId));
+                        
+               
 
 
                         var id = (int)cmd.ExecuteScalar();
@@ -163,7 +165,7 @@ namespace BangazonWorkforce.Controllers
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 return View();
             }
@@ -260,6 +262,175 @@ namespace BangazonWorkforce.Controllers
             }
         }
 
+        // GET: Employees/AssignTP
+        public ActionResult Assign(int id)
+        {
+            var trainingProgramOptions = GetAvailableTrainingPrograms(id);
+            var viewModel = new AddEmployeeToTPViewModel()
+            {
+                TrainingProgramOptions = trainingProgramOptions,
+                //TrainingProgramIds = GetAssignedTrainingPrograms(id)
+                
+            };
+            return View(viewModel);
+        }
+
+        // POST: Employees/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Assign(int id, [FromForm] AddEmployeeToTPViewModel employeeTraining )
+        {
+            try
+            {
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = @"INSERT INTO EmployeeTraining (EmployeeId, TrainingProgramId)
+                                            OUTPUT INSERTED.Id
+                                            VALUES (@employeeId, @trainingProgramId)";
+
+                        cmd.Parameters.Add(new SqlParameter("@employeeId", id));
+                        cmd.Parameters.Add(new SqlParameter("@trainingProgramId", employeeTraining.TrainingProgramId));
+
+
+               
+
+                        var EtId = (int)cmd.ExecuteScalar();
+                        employeeTraining.TrainingProgramIds.Add(employeeTraining.TrainingProgramId);
+
+                        return RedirectToAction(nameof(Index));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return View();
+            }
+        }
+        private List<SelectListItem> GetAssignedTrainingPrograms(int id)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT tp.[Name], tp.Id
+                               FROM TrainingProgram tp
+                               WHERE Id IN (SELECT TrainingProgramId FROM EmployeeTraining WHERE EmployeeTraining.EmployeeId = @id)
+                               AND tp.StartDate >= GETDATE()
+                                         ";
+
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+
+
+                    var reader = cmd.ExecuteReader();
+
+                    var options = new List<SelectListItem>();
+
+
+                    while (reader.Read())
+                    {
+                        var option = new SelectListItem()
+                        {
+                            Text = reader.GetString(reader.GetOrdinal("Name")),
+                            Value = reader.GetInt32(reader.GetOrdinal("Id")).ToString()
+                        };
+
+                        options.Add(option);
+
+                    }
+                    reader.Close();
+                    return options;
+                }
+            }
+        }
+
+        //private List<int> GetTrainingProgramIds(int id)
+        //{
+        //    using (SqlConnection conn = Connection)
+        //    {
+        //        conn.Open();
+        //        using (SqlCommand cmd = conn.CreateCommand())
+        //        {
+        //            cmd.CommandText = @" SELECT tp.[Name], tp.Id
+        //                       FROM TrainingProgram tp
+        //                       WHERE Id NOT IN (SELECT TrainingProgramId FROM EmployeeTraining WHERE EmployeeTraining.EmployeeId = @id)
+        //                       AND tp.StartDate >= GETDATE()
+        //                                ";
+
+
+        //            cmd.Parameters.Add(new SqlParameter("@id", id));
+
+        //            var reader = cmd.ExecuteReader();
+        //            var options = new List<SelectListItem>();
+
+        //            options.Add(new SelectListItem()
+        //            {
+        //                Text = "Select a training program",
+        //                Value = null
+        //            });
+
+        //            while (reader.Read())
+        //            {
+        //                var option = new SelectListItem()
+        //                {
+        //                    Text = reader.GetString(reader.GetOrdinal("Name")),
+        //                    Value = reader.GetInt32(reader.GetOrdinal("Id")).ToString()
+        //                };
+
+        //                options.Add(option);
+
+        //            }
+        //            reader.Close();
+                 
+        //        }
+        //    }
+        //}
+
+        private List<SelectListItem> GetAvailableTrainingPrograms(int id)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @" SELECT tp.[Name], tp.Id
+                               FROM TrainingProgram tp
+                               WHERE Id NOT IN (SELECT TrainingProgramId FROM EmployeeTraining WHERE EmployeeTraining.EmployeeId = @id)
+                               AND tp.StartDate >= GETDATE()
+                                        ";
+
+
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                    var reader = cmd.ExecuteReader();
+                    var options = new List<SelectListItem>();
+
+                    options.Add(new SelectListItem()
+                    {
+                        Text = "Select a training program",
+                        Value = null
+                    });
+
+                    while (reader.Read())
+                    {
+                        var option = new SelectListItem()
+                        {
+                            Text = reader.GetString(reader.GetOrdinal("Name")),
+                            Value = reader.GetInt32(reader.GetOrdinal("Id")).ToString()
+                        };
+
+                        options.Add(option);
+
+                    }
+                    reader.Close();
+                    return options;
+                }
+            }
+        }
+
         private List<TrainingProgram> GetTrainingPrograms(int EmployeeId)
         {
             using (SqlConnection conn = Connection)
@@ -335,6 +506,12 @@ namespace BangazonWorkforce.Controllers
 
                     var reader = cmd.ExecuteReader();
                     var options = new List<SelectListItem>();
+
+                    options.Add(new SelectListItem()
+                    {
+                        Text = "Assign a computer if you want!",
+                        Value = null
+                    });
 
                     while (reader.Read())
                     {
