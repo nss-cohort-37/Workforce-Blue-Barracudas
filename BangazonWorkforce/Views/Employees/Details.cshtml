@@ -40,27 +40,39 @@
 </div>
 <table class="table">
     <thead>
+
         <tr>
-            <h2> Past and Upcoming Trainings</h2>
+            @if (Model.trainingProgram.StartDate >= DateTime.Now)
+            {
+
+                <h5>Upcoming Programs</h5>
+
+            }
+
+            else
+            {
+                <h5>Past Programs</h5>
+
+            }
+
+            <td> @Html.DisplayNameFor(model => model.trainingProgram.Name)</td>
         </tr>
     </thead>
-    <tbody>
 
+    <tbody>
         @foreach (var program in Model.TrainingPrograms)
-        {
-            <tr>
-                <ul>
-                    <li>
-                        @Html.DisplayFor(model => program.Name)
-                    </li>
-                </ul>
-            </tr>
-        }
-    </tbody>
-</table>
+            {
+        <tr>
+            <td> @Html.DisplayFor(model => program.Name)</td>
+        </tr>
+    }
+
+
+        </tbody>
+    </table>
 <div>
     @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
-    <a asp-action="Index">Back to List</a>
-    @Html.ActionLink("Assign", "Assign", new { id = Model.Id }) |
+    <a asp-action="Index">Back to List</a> |
+    @Html.ActionLink("Assign", "Assign", new { id = Model.Id }) 
 
 </div>

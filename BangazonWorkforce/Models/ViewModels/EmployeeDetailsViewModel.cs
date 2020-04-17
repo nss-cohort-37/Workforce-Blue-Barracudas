@@ -18,5 +18,7 @@ namespace BangazonWorkforce.Models.ViewModels
         public Department Department { get; set; }
 
         public List<TrainingProgram> TrainingPrograms { get; set; }
+
+        public TrainingProgram trainingProgram { get; set; }
     }
 }

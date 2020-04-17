@@ -9,7 +9,7 @@ namespace BangazonWorkforce.Models
 {
     public class TrainingProgram
     {
-        public int Id { get; set; }
+        public int? Id { get; set; }
 
         [Display(Name = "Program Name")]
         public string Name { get; set; }

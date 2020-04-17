@@ -79,7 +79,7 @@ namespace BangazonWorkforce.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT e.Id AS EmployeesId, e.FirstName, e.LastName, e.DepartmentId, t.Id AS TrainingProgramsId, t.Name, c.Id AS ComputersId, c.Make, c.Model, d.Name AS DepartmentName
+                    cmd.CommandText = @"SELECT e.Id AS EmployeesId, e.FirstName, e.LastName, e.DepartmentId, t.Id AS TrainingProgramsId, t.Name, c.Id AS ComputersId, c.Make, c.Model, d.Name AS DepartmentName, t.StartDate
                                     FROM Employee e
                                     LEFT JOIN EmployeeTraining p ON e.Id = p.EmployeeId
                                     LEFT JOIN TrainingProgram t ON t.Id = p.TrainingProgramId
@@ -110,7 +110,11 @@ namespace BangazonWorkforce.Controllers
                                 Id = reader.GetInt32(reader.GetOrdinal("DepartmentId")),
                                 Name = reader.GetString(reader.GetOrdinal("DepartmentName"))
                             },
-                            TrainingPrograms = programs
+                            TrainingPrograms = programs, 
+                            trainingProgram = new TrainingProgram()
+                            {
+                                StartDate= reader.GetDateTime(reader.GetOrdinal("StartDate"))
+                            }
                         };
                     }
                     reader.Close();
@@ -273,7 +277,7 @@ namespace BangazonWorkforce.Controllers
             {
                 EmployeeId = employee.Id,
                 TrainingProgramOptions = trainingProgramOptions,
-                //TrainingProgramIds = GetTrainingProgramIds(id)
+                TrainingProgramIds = GetTrainingProgramIds(id)
 
 
             };
@@ -285,35 +289,40 @@ namespace BangazonWorkforce.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Assign(int id, [FromForm] AddEmployeeToTPViewModel employeeTraining )
         {
-            try
+            foreach (var item in employeeTraining.TrainingProgramIds)
             {
-                using (SqlConnection conn = Connection)
-                {
-                    conn.Open();
-                    using (SqlCommand cmd = conn.CreateCommand())
-                    {
 
-                        cmd.CommandText = @"INSERT INTO EmployeeTraining (EmployeeId, TrainingProgramId)
+                try
+                {
+                    using (SqlConnection conn = Connection)
+                    {
+                        conn.Open();
+                        using (SqlCommand cmd = conn.CreateCommand())
+                        {
+
+                            cmd.CommandText = @"INSERT INTO EmployeeTraining (EmployeeId, TrainingProgramId)
                                             OUTPUT INSERTED.Id
                                             VALUES (@employeeId, @trainingProgramId)";
 
-                        cmd.Parameters.Add(new SqlParameter("@employeeId", id));
-                        cmd.Parameters.Add(new SqlParameter("@trainingProgramId", employeeTraining.TrainingProgramId));
+                            cmd.Parameters.Add(new SqlParameter("@employeeId", id));
+                            cmd.Parameters.Add(new SqlParameter("@trainingProgramId", item));
 
 
-                        var EtId = (int)cmd.ExecuteScalar();
+                            var EtId = (int)cmd.ExecuteScalar();
 
+                            //employeeTraining.TrainingProgramIds.Add(employeeTraining.TrainingProgramId);
 
-                        //employeeTraining.TrainingProgramIds.Add(employeeTraining.TrainingProgramId);
-
-                        return RedirectToAction(nameof(Index));
+                           
+                        }
                     }
                 }
+                catch (Exception ex)
+                {
+                    return View();
+                }
             }
-            catch (Exception ex)
-            {
-                return View();
-            }
+            return RedirectToAction(nameof(Index));
+
         }
         private List<SelectListItem> GetAssignedTrainingPrograms(int id)
         {
@@ -447,14 +456,26 @@ namespace BangazonWorkforce.Controllers
 
                     while (reader.Read())
                     {
-                        var program = new TrainingProgram()
+                        if(!reader.IsDBNull(reader.GetOrdinal("TrainingProgramId")))
                         {
-                            Id = reader.GetInt32(reader.GetOrdinal("TrainingProgramId")),
-                            Name = reader.GetString(reader.GetOrdinal("TrainingName")), 
-                           
-                        };
 
-                        programs.Add(program);
+                            var program = new TrainingProgram()
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("TrainingProgramId")),
+                                Name = reader.GetString(reader.GetOrdinal("TrainingName")), 
+                           
+                            };
+
+                            programs.Add(program);
+
+                        } else
+                        {
+                            var program = new TrainingProgram()
+                            {
+                                Id = null,
+                                Name = null
+                            };
+                        }
 
                     }
                     reader.Close();
