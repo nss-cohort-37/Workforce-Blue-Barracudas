@@ -12,7 +12,7 @@ namespace BangazonWorkforce.Models.ViewModels
 
 
         [Display(Name = "Id")]
-        public int TrainingProgramId { get; set; }
+        public int? TrainingProgramId { get; set; }
 
         [Display(Name = "Program Name")]
         public string TrainingProgramName { get; set; }

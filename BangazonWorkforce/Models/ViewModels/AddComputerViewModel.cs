@@ -18,6 +18,7 @@ namespace BangazonWorkforce.Models.ViewModels
         public string Make { get; set; }
 
         [Display(Name = "Purchase Date")]
+        [Required]
         public DateTime PurchaseDate { get; set; }
 
         public DateTime DecomissionDate { get; set; }

@@ -16,22 +16,26 @@
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Budget)
         </dd>
-        <dt class="col-lg-4">
-            @Html.DisplayNameFor(model => model.Employees)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.Display(" ")
-        </dd>
+    </dl>
+        <table class="table">
+            <thead>
+                <tr>
+                    <h4>Employees</h4>
+                    </tr>
+                </thead>
+
         @foreach (var employee in Model.Employees)
         {
             if (employee != null)
             {
-                <dd class="col-sm-10">
+                <tr>
+                <td class="col-sm-10">
                     @Html.DisplayFor(model => employee.FirstName)
-                </dd>
+                </td>
+                    </tr>
             }
         }
-    </dl>
+            </table>
 </div>
 <div>
     @Html.ActionLink("Edit", "Edit", new { /* id = Model.PrimaryKey */ }) |
