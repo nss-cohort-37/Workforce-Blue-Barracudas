@@ -265,12 +265,17 @@ namespace BangazonWorkforce.Controllers
         // GET: Employees/AssignTP
         public ActionResult Assign(int id)
         {
+            var employee = GetEmployeeById(id);
             var trainingProgramOptions = GetAvailableTrainingPrograms(id);
+            var registeredTrainingPrograms= GetAssignedTrainingPrograms(id);
+            trainingProgramOptions.AddRange(registeredTrainingPrograms); 
             var viewModel = new AddEmployeeToTPViewModel()
             {
+                EmployeeId = employee.Id,
                 TrainingProgramOptions = trainingProgramOptions,
-                //TrainingProgramIds = GetAssignedTrainingPrograms(id)
-                
+                //TrainingProgramIds = GetTrainingProgramIds(id)
+
+
             };
             return View(viewModel);
         }
@@ -287,6 +292,7 @@ namespace BangazonWorkforce.Controllers
                     conn.Open();
                     using (SqlCommand cmd = conn.CreateCommand())
                     {
+
                         cmd.CommandText = @"INSERT INTO EmployeeTraining (EmployeeId, TrainingProgramId)
                                             OUTPUT INSERTED.Id
                                             VALUES (@employeeId, @trainingProgramId)";
@@ -295,10 +301,10 @@ namespace BangazonWorkforce.Controllers
                         cmd.Parameters.Add(new SqlParameter("@trainingProgramId", employeeTraining.TrainingProgramId));
 
 
-               
-
                         var EtId = (int)cmd.ExecuteScalar();
-                        employeeTraining.TrainingProgramIds.Add(employeeTraining.TrainingProgramId);
+
+
+                        //employeeTraining.TrainingProgramIds.Add(employeeTraining.TrainingProgramId);
 
                         return RedirectToAction(nameof(Index));
                     }
@@ -335,7 +341,8 @@ namespace BangazonWorkforce.Controllers
                         var option = new SelectListItem()
                         {
                             Text = reader.GetString(reader.GetOrdinal("Name")),
-                            Value = reader.GetInt32(reader.GetOrdinal("Id")).ToString()
+                            Value = reader.GetInt32(reader.GetOrdinal("Id")).ToString(), 
+                            Disabled = true
                         };
 
                         options.Add(option);
@@ -347,47 +354,37 @@ namespace BangazonWorkforce.Controllers
             }
         }
 
-        //private List<int> GetTrainingProgramIds(int id)
-        //{
-        //    using (SqlConnection conn = Connection)
-        //    {
-        //        conn.Open();
-        //        using (SqlCommand cmd = conn.CreateCommand())
-        //        {
-        //            cmd.CommandText = @" SELECT tp.[Name], tp.Id
-        //                       FROM TrainingProgram tp
-        //                       WHERE Id NOT IN (SELECT TrainingProgramId FROM EmployeeTraining WHERE EmployeeTraining.EmployeeId = @id)
-        //                       AND tp.StartDate >= GETDATE()
-        //                                ";
+        private List<int> GetTrainingProgramIds(int id)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @" SELECT tp.[Name], tp.Id
+                               FROM TrainingProgram tp
+                               WHERE Id IN (SELECT TrainingProgramId FROM EmployeeTraining WHERE EmployeeTraining.EmployeeId = @id)
+                               AND tp.StartDate >= GETDATE()
+                                        ";
 
 
-        //            cmd.Parameters.Add(new SqlParameter("@id", id));
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
 
-        //            var reader = cmd.ExecuteReader();
-        //            var options = new List<SelectListItem>();
+                    var reader = cmd.ExecuteReader();
 
-        //            options.Add(new SelectListItem()
-        //            {
-        //                Text = "Select a training program",
-        //                Value = null
-        //            });
+                    List<int> trainingProgramIds = new List<int>(); 
 
-        //            while (reader.Read())
-        //            {
-        //                var option = new SelectListItem()
-        //                {
-        //                    Text = reader.GetString(reader.GetOrdinal("Name")),
-        //                    Value = reader.GetInt32(reader.GetOrdinal("Id")).ToString()
-        //                };
+                    while (reader.Read())
+                    {
+                        trainingProgramIds.Add(reader.GetInt32(reader.GetOrdinal("Id"))); 
 
-        //                options.Add(option);
+                    }
+                    reader.Close();
+                    return trainingProgramIds; 
 
-        //            }
-        //            reader.Close();
-                 
-        //        }
-        //    }
-        //}
+                }
+            }
+        }
 
         private List<SelectListItem> GetAvailableTrainingPrograms(int id)
         {
@@ -419,7 +416,8 @@ namespace BangazonWorkforce.Controllers
                         var option = new SelectListItem()
                         {
                             Text = reader.GetString(reader.GetOrdinal("Name")),
-                            Value = reader.GetInt32(reader.GetOrdinal("Id")).ToString()
+                            Value = reader.GetInt32(reader.GetOrdinal("Id")).ToString(), 
+                           
                         };
 
                         options.Add(option);
@@ -452,7 +450,8 @@ namespace BangazonWorkforce.Controllers
                         var program = new TrainingProgram()
                         {
                             Id = reader.GetInt32(reader.GetOrdinal("TrainingProgramId")),
-                            Name = reader.GetString(reader.GetOrdinal("TrainingName"))
+                            Name = reader.GetString(reader.GetOrdinal("TrainingName")), 
+                           
                         };
 
                         programs.Add(program);

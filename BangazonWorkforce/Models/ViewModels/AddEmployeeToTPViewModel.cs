@@ -19,7 +19,7 @@ namespace BangazonWorkforce.Models.ViewModels
 
         public List<int> TrainingProgramIds { get; set; }
 
-        public List<SelectListItem> AllTogether { get; set; }
+       
          
     }
 }
