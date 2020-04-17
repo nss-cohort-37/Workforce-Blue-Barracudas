@@ -336,7 +336,7 @@ namespace BangazonWorkforce.Controllers
                     return View();
                 }
             }
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Details", new { Id = id});
 
         }
         private List<SelectListItem> GetAssignedTrainingPrograms(int id)
@@ -460,7 +460,7 @@ namespace BangazonWorkforce.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT p.TrainingProgramId, t.Name AS TrainingName
+                    cmd.CommandText = @"SELECT p.TrainingProgramId, t.Name AS TrainingName, t.StartDate
                                     FROM EmployeeTraining p
                                     LEFT JOIN TrainingProgram t ON t.Id = p.TrainingProgramId
                                     WHERE p.EmployeeId = @EmployeeId";
@@ -485,6 +485,7 @@ namespace BangazonWorkforce.Controllers
                             {
                                 Id = reader.GetInt32(reader.GetOrdinal("TrainingProgramId")),
                                 Name = reader.GetString(reader.GetOrdinal("TrainingName")), 
+                                StartDate = reader.GetDateTime(reader.GetOrdinal("StartDate"))
                            
                             };
 
