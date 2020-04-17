@@ -74,6 +74,7 @@ namespace BangazonWorkforce.Controllers
         public ActionResult Details(int id)
         {
             var programs = GetTrainingPrograms(id);
+// programs is null 
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
@@ -109,13 +110,27 @@ namespace BangazonWorkforce.Controllers
                             {
                                 Id = reader.GetInt32(reader.GetOrdinal("DepartmentId")),
                                 Name = reader.GetString(reader.GetOrdinal("DepartmentName"))
-                            },
-                            TrainingPrograms = programs, 
-                            trainingProgram = new TrainingProgram()
-                            {
-                                StartDate= reader.GetDateTime(reader.GetOrdinal("StartDate"))
                             }
+
+                            
+                     
                         };
+                            if(programs.Count >0)
+                             {
+
+                            employee.TrainingPrograms = programs;
+
+                                employee.trainingProgram = new TrainingProgram()
+                                {
+                                    StartDate = reader.GetDateTime(reader.GetOrdinal("StartDate"))
+                                };
+
+                             }else
+                        {
+                            employee.TrainingPrograms = programs;
+                            
+                        }
+                 
                     }
                     reader.Close();
                     return View(employee);
@@ -449,16 +464,23 @@ namespace BangazonWorkforce.Controllers
                                     FROM EmployeeTraining p
                                     LEFT JOIN TrainingProgram t ON t.Id = p.TrainingProgramId
                                     WHERE p.EmployeeId = @EmployeeId";
-                    cmd.Parameters.Add(new SqlParameter("@Employeeid", EmployeeId));
+                    cmd.Parameters.Add(new SqlParameter("@EmployeeId", EmployeeId));
 
                     var reader = cmd.ExecuteReader();
                     var programs = new List<TrainingProgram>();
 
+                    if (reader.HasRows == false)
+                    {
+                        var program = new TrainingProgram()
+                        {
+                            Id = null,
+                            Name = null
+                        };
+
+                    }
                     while (reader.Read())
                     {
-                        if(!reader.IsDBNull(reader.GetOrdinal("TrainingProgramId")))
-                        {
-
+                        
                             var program = new TrainingProgram()
                             {
                                 Id = reader.GetInt32(reader.GetOrdinal("TrainingProgramId")),
@@ -468,14 +490,7 @@ namespace BangazonWorkforce.Controllers
 
                             programs.Add(program);
 
-                        } else
-                        {
-                            var program = new TrainingProgram()
-                            {
-                                Id = null,
-                                Name = null
-                            };
-                        }
+                        
 
                     }
                     reader.Close();
