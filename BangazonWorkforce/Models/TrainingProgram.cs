@@ -15,9 +15,11 @@ namespace BangazonWorkforce.Models
         public string Name { get; set; }
 
         [Display(Name = "Start Date")]
+        [DisplayFormat(DataFormatString = "{0:dddd, MMMM dd, yyyy}")]
         public DateTime StartDate { get; set; }
 
         [Display(Name = "End Date")]
+        [DisplayFormat(DataFormatString = "{0:dddd, MMMM dd, yyyy}")]
         public DateTime EndDate { get; set; }
 
 
